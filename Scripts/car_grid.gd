@@ -4,7 +4,7 @@ extends Node2D
 var car_grid =  []
 var column_size :int = 6
 var row_size :int = 8
-var cell_size: int = 100
+var cell_size: int = 40
 
 var money: int = 0
 
@@ -76,7 +76,6 @@ func are_positions_contiguous(pos1: Vector2, pos2: Vector2) -> bool:
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("click"):
 		self.check_carpool(get_global_mouse_position())
-	pass
 
 #- grid_to_position(pos_grid): pos_world: 
 #Le pasas la posición de la grid y te devuelve la posción del mundo del centro de la celda.
@@ -119,26 +118,45 @@ func spawn_cars():
 func paint_cars():
 	for i in range(row_size):
 		for j in range(column_size):
-			var car_to_paint = car_grid[i][j]
-			car_to_paint.position = grid_to_position(Vector2(j, i))
-			add_child(car_to_paint)
-			#print("Pintando coche de color " + str(car_to_paint.color) + " en celda (" + str(i) + ", " + str(j) + ") en posicion " + str(car_to_paint.position))
+			if car_grid[i][j] != null:
+				var car_to_paint = car_grid[i][j]
+				car_to_paint.position = grid_to_position(Vector2(j, i))
+				add_child(car_to_paint)
+				#print("Pintando coche de color " + str(car_to_paint.color) + " en celda (" + str(i) + ", " + str(j) + ") en posicion " + str(car_to_paint.position))
+
 	
 #relocate_cars(array de celdas): 
 #recoloca todos los coches que están por encima una celda más abajo. 
 #Asegurarse que se hace siempre de abajo a arriba.
+
+
+
 func relocate_cars(empty_columns: Array[int]):
-	pass
+	# el vector x=i y=j en principio
+	print(empty_columns)
+	var movable_cars = []
+	for column in empty_columns:
+		for row in range(row_size-1, -1, -1):
+			if(car_grid[row][column]!=null):
+				movable_cars.append(car_grid[row][column])
+				car_grid[row][column] = null
+		var row = row_size-1
+		for _car in movable_cars:
+			car_grid[row][column] = _car
+			row -=1
+	
+
+#- carpool(coche1 y coche2): 
+	#se encarga de borrar el coche 2, sumar dinero, y llamar al método relocate_cars.
 
 # Se elimina de la matriz de coches el segundo coche.
 func carpool(car1_grid_position: Vector2, car2_grid_position: Vector2):
 	if(car_grid[car2_grid_position.y][car2_grid_position.x] != null):
+		car_grid[car2_grid_position.y][car2_grid_position.x].queue_free();
 		car_grid[car2_grid_position.y][car2_grid_position.x] = null;
 		money += 10;
 		print('Carpool successful. Current money: ' + str(money));
-		if(car1_grid_position.x == car2_grid_position.x):
-			relocate_cars([car1_grid_position.y])
-		else:
-			relocate_cars([car1_grid_position.y, car2_grid_position.y])
+		relocate_cars([car2_grid_position.x])
+		paint_cars()
 	else:
 		print('Carpool error car2 not in grid')

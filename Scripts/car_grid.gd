@@ -1,17 +1,24 @@
 extends Node2D
 
 
-var car_grid =Array[Array[car]]
+var car_grid =  []
 var column_size :int = 6
 var row_size :int = 8
 var cell_size: int = 20
+
+const green_car = preload("res://Scenes/green_car.tscn")
+const blue_car = preload("res://Scenes/blue_car.tscn")
+const red_car = preload("res://Scenes/red_car.tscn")
+
+const car_spawn = [green_car, blue_car, red_car]
 
 
 var current_car: car
 
 func _ready() -> void:
-	car_grid.resize
-	pass # Replace with function body.
+	spawn_cars()
+	print(car_grid)
+
 
 	 #Al pulsar on_click_on_grid (en process):
 	#- Se llama a position_to_grid para obtener el coche pulsado de la matriz de coches.
@@ -42,7 +49,14 @@ func position_to_grid(world_position:Vector2) -> Vector2:
 # recorrer la grid, spawnea un coche con un color al azar y le establece la posición.
 # Y añade ese coche en la grid de coches (array bidimensional).
 func spawn_cars():
-	pass
+	for i in range(row_size):
+		var row = []
+		for j in range(cell_size):
+			var random_index = randi_range(0,2)
+			var car_to_add = car_spawn[random_index].instantiate()
+			#pendiente meter pos?
+			row.append(car_to_add)
+		car_grid.append(row)
 # paint_cars(): obtiene la array de coches y 
 # los coloca usando el método grid_to_position().
 func paint_cars():

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dnlnnbys6noty"]
+
+[ext_resource type="Script" path="res://Scenes/car.gd" id="1_2fdig"]
+
+[node name="GreenCar" type="Node2D"]
+script = ExtResource("1_2fdig")

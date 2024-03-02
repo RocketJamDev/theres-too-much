@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://c4cs2u5ky8l0i"]
+
+[ext_resource type="Script" path="res://Scenes/car.gd" id="1_eubc2"]
+
+[node name="blue_car" type="Node2D"]
+script = ExtResource("1_eubc2")
+color = 2

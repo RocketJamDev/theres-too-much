@@ -1,3 +1,7 @@
-[gd_scene format=3 uid="uid://bujajap0jp4rp"]
+[gd_scene load_steps=2 format=3 uid="uid://bujajap0jp4rp"]
+
+[ext_resource type="PackedScene" uid="uid://b7bur1fes3k40" path="res://Scenes/car_grid.tscn" id="1_bj8k5"]
 
 [node name="Main" type="Node2D"]
+
+[node name="CarGrid" parent="." instance=ExtResource("1_bj8k5")]

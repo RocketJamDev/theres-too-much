@@ -6,6 +6,7 @@ var column_size :int = 6
 var row_size :int = 8
 var cell_size: int = 20
 
+
 const green_car = preload("res://Scenes/green_car.tscn")
 const blue_car = preload("res://Scenes/blue_car.tscn")
 const red_car = preload("res://Scenes/red_car.tscn")
@@ -29,7 +30,7 @@ func _ready() -> void:
 
 func on_click_on_grid(world_position: Vector2):
 	var grid_position = position_to_grid(world_position)
-	print("World position: " + str(world_position) + " is Grid position: " + str(grid_position))
+	print("World position: " + str(world_position) + " is Grid position: " + str(grid_position.y) + str(grid_position.x))
 	pass
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -41,7 +42,7 @@ func _process(delta: float) -> void:
 #- grid_to_position(pos_grid): pos_world: 
 #Le pasas la posición de la grid y te devuelve la posción del mundo del centro de la celda.
 func grid_to_position(grid_position:Vector2) -> Vector2:
-	if(grid_position.x > row_size || grid_position.y > column_size):
+	if(grid_position.x >= column_size || grid_position.y >= row_size):
 		print("grid_to_position: grid_position out of bounds")
 		return Vector2.ZERO
 	
@@ -55,10 +56,10 @@ func grid_to_position(grid_position:Vector2) -> Vector2:
  #Le pasas la posición del mundo y te devuelve la posición de la grid.
 func position_to_grid(world_position:Vector2) -> Vector2:
 	var grid_position = Vector2()
-	grid_position.x = floor(world_position.x / cell_size)
 	grid_position.y = floor(world_position.y / cell_size)
+	grid_position.x = floor(world_position.x / cell_size)
 	
-	if(grid_position.x > column_size || grid_position.y > row_size):
+	if(grid_position.x >= column_size || grid_position.y >= row_size):
 		print("position_to_grid: grid_position out of bounds")
 		return Vector2.ZERO
 	return grid_position
@@ -82,7 +83,8 @@ func paint_cars():
 	for i in range(row_size):
 		for j in range(column_size):
 			var car_to_paint = car_grid[i][j]
-			car_to_paint.position = grid_to_position(Vector2(i, j))
+			car_to_paint.position = grid_to_position(Vector2(j, i))
+			add_child(car_to_paint)
 			print("Pintando coche de color " + str(car_to_paint.color) + " en celda (" + str(i) + ", " + str(j) + ") en posicion " + str(car_to_paint.position))
 	
 #relocate_cars(array de celdas): 

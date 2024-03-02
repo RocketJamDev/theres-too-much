@@ -2,10 +2,15 @@ extends Node2D
 
 
 var car_grid =Array[Array[car]]
+var column_size :int = 6
+var row_size :int = 8
+var cell_size: int = 20
+
 
 var current_car: car
 
 func _ready() -> void:
+	car_grid.resize
 	pass # Replace with function body.
 
 	 #Al pulsar on_click_on_grid (en process):

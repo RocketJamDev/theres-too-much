@@ -128,9 +128,6 @@ func paint_cars():
 #relocate_cars(array de celdas): 
 #recoloca todos los coches que están por encima una celda más abajo. 
 #Asegurarse que se hace siempre de abajo a arriba.
-
-
-
 func relocate_cars(empty_columns: Array[int]):
 	# el vector x=i y=j en principio
 	print(empty_columns)

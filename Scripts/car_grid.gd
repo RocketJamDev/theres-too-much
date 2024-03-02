@@ -127,7 +127,7 @@ func paint_cars():
 #relocate_cars(array de celdas): 
 #recoloca todos los coches que están por encima una celda más abajo. 
 #Asegurarse que se hace siempre de abajo a arriba.
-func relocate_cars(empty_cells: Array[Vector2]):
+func relocate_cars(empty_columns: Array[int]):
 	pass
 
 # Se elimina de la matriz de coches el segundo coche.
@@ -136,5 +136,9 @@ func carpool(car1_grid_position: Vector2, car2_grid_position: Vector2):
 		car_grid[car2_grid_position.y][car2_grid_position.x] = null;
 		money += 10;
 		print('Carpool successful. Current money: ' + str(money));
+		if(car1_grid_position.x == car2_grid_position.x):
+			relocate_cars([car1_grid_position.y])
+		else:
+			relocate_cars([car1_grid_position.y, car2_grid_position.y])
 	else:
 		print('Carpool error car2 not in grid')

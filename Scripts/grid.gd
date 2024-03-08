@@ -1,13 +1,10 @@
 extends Node2D
 
-
 var car_grid =  []
 var column_size :int = 6
 var row_size :int = 8
-var cell_size: int = 40
-
+var cell_size: int = 100
 var money: int = 0
-
 
 const green_car = preload("res://Scenes/green_car.tscn")
 const blue_car = preload("res://Scenes/blue_car.tscn")
@@ -16,6 +13,7 @@ const red_car = preload("res://Scenes/red_car.tscn")
 const car_spawn = [green_car, blue_car, red_car]
 
 var current_car: car
+var bus_mode: bool = false
 
 func _ready() -> void:
 	spawn_cars()
@@ -38,6 +36,8 @@ func check_carpool(world_position: Vector2) -> bool:
 		return false
 	
 	var clicked_car = car_grid[grid_position.y][grid_position.x]
+	
+	clicked_car = instance_from_id(car_grid[grid_position.y][grid_position.x].entity_id)
 	
 	if(clicked_car == null):
 		print('Clicked in an empty cell')
@@ -75,7 +75,10 @@ func are_positions_contiguous(pos1: Vector2, pos2: Vector2) -> bool:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("click"):
-		self.check_carpool(get_global_mouse_position())
+		if(!bus_mode):
+			self.check_carpool(get_global_mouse_position())	
+		else:
+			print("bus mode click")
 
 #- grid_to_position(pos_grid): pos_world: 
 #Le pasas la posición de la grid y te devuelve la posción del mundo del centro de la celda.
@@ -108,9 +111,16 @@ func spawn_cars():
 	for i in range(row_size):
 		var row = []
 		for j in range(column_size):
+			# creamos el coche
 			var random_index = randi_range(0,2)
 			var car_to_add = car_spawn[random_index].instantiate()
-			row.append(car_to_add)
+			
+			# creamos la celda
+			var cell = Cell.new()
+			cell.entity_id = car_to_add.get_instance_id()
+			cell.entity_type = Cell.cell_entity_type.CAR
+			
+			row.append(cell)
 		car_grid.append(row)
 
 # paint_cars(): obtiene la array de coches y 
@@ -119,7 +129,9 @@ func paint_cars():
 	for i in range(row_size):
 		for j in range(column_size):
 			if car_grid[i][j] != null:
-				var car_to_paint = car_grid[i][j]
+				if(car_grid[i][j].entity_type == Cell.cell_entity_type.EMPTY):
+					continue
+				var car_to_paint = instance_from_id(car_grid[i][j].entity_id)
 				car_to_paint.position = grid_to_position(Vector2(j, i))
 				add_child(car_to_paint)
 				#print("Pintando coche de color " + str(car_to_paint.color) + " en celda (" + str(i) + ", " + str(j) + ") en posicion " + str(car_to_paint.position))
@@ -131,17 +143,19 @@ func paint_cars():
 func relocate_cars(empty_columns: Array[int]):
 	# el vector x=i y=j en principio
 	print(empty_columns)
-	var movable_cars = []
+	var movable_cars_cell = []
 	for column in empty_columns:
 		for row in range(row_size-1, -1, -1):
-			if(car_grid[row][column]!=null):
-				movable_cars.append(car_grid[row][column])
-				car_grid[row][column] = null
+			if(car_grid[row][column].entity_type != Cell.cell_entity_type.EMPTY):
+				# guardamos una copia de la celda vieja
+				movable_cars_cell.append(car_grid[row][column].duplicate())
+				
+				# vaciamos la celda 
+				car_grid[row][column].clear_cell()
 		var row = row_size-1
-		for _car in movable_cars:
-			car_grid[row][column] = _car
-			row -=1
-	
+		for car_cell in movable_cars_cell:
+			car_grid[row][column] = car_cell
+			row -= 1
 
 #- carpool(coche1 y coche2): 
 	#se encarga de borrar el coche 2, sumar dinero, y llamar al método relocate_cars.
@@ -149,11 +163,16 @@ func relocate_cars(empty_columns: Array[int]):
 # Se elimina de la matriz de coches el segundo coche.
 func carpool(car1_grid_position: Vector2, car2_grid_position: Vector2):
 	if(car_grid[car2_grid_position.y][car2_grid_position.x] != null):
-		car_grid[car2_grid_position.y][car2_grid_position.x].queue_free();
-		car_grid[car2_grid_position.y][car2_grid_position.x] = null;
+		instance_from_id(car_grid[car2_grid_position.y][car2_grid_position.x].entity_id).queue_free();
+		car_grid[car2_grid_position.y][car2_grid_position.x].clear_cell();
 		money += 10;
 		print('Carpool successful. Current money: ' + str(money));
 		relocate_cars([car2_grid_position.x])
 		paint_cars()
 	else:
 		print('Carpool error car2 not in grid')
+
+
+func _on_texture_button_pressed():
+	bus_mode = !bus_mode
+	pass # Replace with function body.

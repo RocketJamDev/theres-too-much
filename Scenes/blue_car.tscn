@@ -1,14 +1,26 @@
-[gd_scene load_steps=2 format=3 uid="uid://c4cs2u5ky8l0i"]
+[gd_scene load_steps=4 format=3 uid="uid://c4cs2u5ky8l0i"]
 
-[ext_resource type="Script" path="res://Scenes/car.gd" id="1_eubc2"]
+[ext_resource type="Script" path="res://Scripts/car.gd" id="1_8gw6g"]
+[ext_resource type="Texture2D" uid="uid://baeynqf4e0wae" path="res://Textures/cars.png" id="2_62gc3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qptjs"]
+atlas = ExtResource("2_62gc3")
+region = Rect2(291, 98.9472, 27.9708, 49.0528)
 
 [node name="blue_car" type="Node2D"]
-script = ExtResource("1_eubc2")
+script = ExtResource("1_8gw6g")
 color = 2
 
 [node name="ColorRect" type="ColorRect" parent="."]
+visible = false
 offset_left = -10.0
 offset_top = -10.0
 offset_right = 10.0
 offset_bottom = 10.0
 color = Color(0, 0.533333, 0.827451, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(-1.19209e-07, -3.72529e-09)
+scale = Vector2(2, 2)
+texture = SubResource("AtlasTexture_qptjs")

@@ -16,8 +16,37 @@ var current_car: car
 var bus_mode: bool = false
 
 func _ready() -> void:
-	spawn_cars()
-	paint_cars()
+	create_grid()
+	paint_grid()
+
+#- grid_to_position(pos_grid): pos_world: 
+#Le pasas la posición de la grid y te devuelve la posción del mundo del centro de la celda.
+func grid_to_position(grid_position:Vector2):
+	if(grid_position.x >= column_size || grid_position.y >= row_size || grid_position.x < 0 || grid_position.y < 0):
+		return null
+	
+	var world_position = Vector2()
+	world_position.x = grid_position.x * cell_size + cell_size / 2
+	world_position.y = grid_position.y * cell_size + cell_size / 2
+	return world_position
+
+#- position_to_grid(pos_world):
+ #Le pasas la posición del mundo y te devuelve la posición de la grid.
+func position_to_grid(world_position:Vector2):
+	var grid_position = Vector2()
+	grid_position.y = floor(world_position.y / cell_size)
+	grid_position.x = floor(world_position.x / cell_size)
+	
+	if(grid_position.x >= column_size || grid_position.y >= row_size || grid_position.x < 0 || grid_position.y < 0):
+		return null
+		
+	return grid_position
+
+func are_positions_contiguous(pos1: Vector2, pos2: Vector2) -> bool:
+	if abs(pos1.x - pos2.x) <= 1 and abs(pos1.y - pos2.y) <= 1:
+		return true
+	else:
+		return false
 
 	#Al pulsar on_click_on_grid (en process):
 	#- Se llama a position_to_grid para obtener el coche pulsado de la matriz de coches.
@@ -26,7 +55,6 @@ func _ready() -> void:
 	#- Si hay un coche, se comprueba si son casillas contiguas y si coincide el color
 		#- Si no coincide: se borra el coche guardado y se da feedback de error.
 		#- Si coincide: se borra el coche guardado y se comieza el proceso carpooling eliminando de la matriz de coches el segundo coche.
-
 func check_carpool(world_position: Vector2) -> bool:
 	var grid_position = position_to_grid(world_position)
 	
@@ -66,48 +94,24 @@ func check_carpool(world_position: Vector2) -> bool:
 		self.carpool(current_car_grid_position, clicked_car_grid_position);
 		return true
 
-func are_positions_contiguous(pos1: Vector2, pos2: Vector2) -> bool:
-	if abs(pos1.x - pos2.x) <= 1 and abs(pos1.y - pos2.y) <= 1:
-		return true
+#- carpool(coche1 y coche2): 
+	#se encarga de borrar el coche 2, sumar dinero, y llamar al método relocate_cars.
+# Se elimina de la matriz de coches el segundo coche.
+func carpool(car1_grid_position: Vector2, car2_grid_position: Vector2):
+	if(car_grid[car2_grid_position.y][car2_grid_position.x] != null):
+		instance_from_id(car_grid[car2_grid_position.y][car2_grid_position.x].entity_id).queue_free();
+		car_grid[car2_grid_position.y][car2_grid_position.x].clear_cell();
+		money += 10;
+		print('Carpool successful. Current money: ' + str(money));
+		relocate_grid([car2_grid_position.x])
+		paint_grid()
 	else:
-		return false
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	if Input.is_action_just_pressed("click"):
-		if(!bus_mode):
-			self.check_carpool(get_global_mouse_position())	
-		else:
-			print("bus mode click")
-
-#- grid_to_position(pos_grid): pos_world: 
-#Le pasas la posición de la grid y te devuelve la posción del mundo del centro de la celda.
-func grid_to_position(grid_position:Vector2):
-	if(grid_position.x >= column_size || grid_position.y >= row_size):
-		print("grid_to_position: grid_position out of bounds")
-		return null
-	
-	var world_position = Vector2()
-	world_position.x = grid_position.x * cell_size + cell_size / 2
-	world_position.y = grid_position.y * cell_size + cell_size / 2
-	return world_position
-
-#- position_to_grid(pos_world):
- #Le pasas la posición del mundo y te devuelve la posición de la grid.
-func position_to_grid(world_position:Vector2):
-	var grid_position = Vector2()
-	grid_position.y = floor(world_position.y / cell_size)
-	grid_position.x = floor(world_position.x / cell_size)
-	
-	if(grid_position.x >= column_size || grid_position.y >= row_size):
-		print("position_to_grid: grid_position out of bounds")
-		return null
-	return grid_position
+		print('Carpool error car2 not in grid')
 
 #- spawn_cars(): 
 # recorrer la grid, spawnea un coche con un color al azar y le establece la posición.
 # Y añade ese coche en la grid de coches (array bidimensional).
-func spawn_cars():
+func create_grid():
 	for i in range(row_size):
 		var row = []
 		for j in range(column_size):
@@ -125,7 +129,7 @@ func spawn_cars():
 
 # paint_cars(): obtiene la array de coches y 
 # los coloca usando el método grid_to_position().
-func paint_cars():
+func paint_grid():
 	for i in range(row_size):
 		for j in range(column_size):
 			if car_grid[i][j] != null:
@@ -140,7 +144,7 @@ func paint_cars():
 #relocate_cars(array de celdas): 
 #recoloca todos los coches que están por encima una celda más abajo. 
 #Asegurarse que se hace siempre de abajo a arriba.
-func relocate_cars(empty_columns: Array[int]):
+func relocate_grid(empty_columns: Array[int]):
 	# el vector x=i y=j en principio
 	print(empty_columns)
 	var movable_cars_cell = []
@@ -156,23 +160,3 @@ func relocate_cars(empty_columns: Array[int]):
 		for car_cell in movable_cars_cell:
 			car_grid[row][column] = car_cell
 			row -= 1
-
-#- carpool(coche1 y coche2): 
-	#se encarga de borrar el coche 2, sumar dinero, y llamar al método relocate_cars.
-
-# Se elimina de la matriz de coches el segundo coche.
-func carpool(car1_grid_position: Vector2, car2_grid_position: Vector2):
-	if(car_grid[car2_grid_position.y][car2_grid_position.x] != null):
-		instance_from_id(car_grid[car2_grid_position.y][car2_grid_position.x].entity_id).queue_free();
-		car_grid[car2_grid_position.y][car2_grid_position.x].clear_cell();
-		money += 10;
-		print('Carpool successful. Current money: ' + str(money));
-		relocate_cars([car2_grid_position.x])
-		paint_cars()
-	else:
-		print('Carpool error car2 not in grid')
-
-
-func _on_texture_button_pressed():
-	bus_mode = !bus_mode
-	pass # Replace with function body.

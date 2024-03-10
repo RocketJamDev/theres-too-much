@@ -22,5 +22,6 @@ color = Color(0, 0.533333, 0.827451, 1)
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
 position = Vector2(-1.19209e-07, -3.72529e-09)
+rotation = 3.14159
 scale = Vector2(2, 2)
 texture = SubResource("AtlasTexture_qptjs")
